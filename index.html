@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerador de Paletas de Cores</title>
+
+  <!-- Fontes: Space Mono para os códigos hex (precisão técnica), Inter para a UI -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- As 5 colunas da paleta são geradas dinamicamente pelo JS -->
+  <main id="palette" class="palette"></main>
+
+  <button id="generateBtn" class="generate-btn">
+    Gerar Nova Paleta <span class="key-hint">espaço</span>
+  </button>
+
+  <script src="script.js"></script>
+</body>
+</html>
