@@ -4,12 +4,14 @@
 
 Gere paletas de **5 cores aleatórias** com um clique (ou com a barra de espaço), trave as que você gostou e copie ou exporte a paleta na hora.
 
-[![Testar online](https://img.shields.io/badge/▶_Testar_online-264653?style=for-the-badge)](https://erickfuzer.github.io/GeradorDePaletas/)
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
 ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
 
 <img src="assets/preview.png" alt="Gerador de Paletas mostrando cinco colunas de cor com seus códigos hex, RGB e HSL, a do meio travada" width="760">
+<br><br>
+
+[![Testar no navegador](https://img.shields.io/badge/▶_Testar_no_navegador-264653?style=for-the-badge)](https://erickfuzer.github.io/GeradorDePaletas/)
 
 </div>
 
