@@ -185,12 +185,27 @@ body {
   transform: translateX(-50%) translateY(0);
 }
 
-/* ---------- Botão flutuante ---------- */
-.generate-btn {
+/* ---------- Botões flutuantes ---------- */
+/* A barra ocupa a largura toda só para centralizar os botões; ela mesma não recebe cliques */
+.actions {
   position: fixed;
   bottom: 2rem;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0 1rem;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.actions > * {
+  pointer-events: auto;
+}
+
+.action-btn {
   display: flex;
   align-items: center;
   gap: 0.6rem;
@@ -205,19 +220,25 @@ body {
   padding: 0.95em 1.8em;
   border-radius: 999px;
   cursor: pointer;
+  white-space: nowrap;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
   transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-  z-index: 10;
 }
 
-.generate-btn:hover {
-  transform: translateX(-50%) translateY(-3px);
+.action-btn:hover {
+  transform: translateY(-3px);
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.32);
   background: rgba(35, 35, 38, 0.9);
 }
 
-.generate-btn:active {
-  transform: translateX(-50%) translateY(-1px);
+.action-btn:active {
+  transform: translateY(-1px);
+}
+
+.action-btn:focus-visible,
+.export-option:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.7);
+  outline-offset: 2px;
 }
 
 .key-hint {
@@ -232,15 +253,107 @@ body {
   border-radius: 5px;
 }
 
+/* ---------- Menu de exportar ---------- */
+/* flex para o botão "Exportar" esticar e ficar com a mesma altura do "Gerar" */
+.export {
+  position: relative;
+  display: flex;
+}
+
+.chevron {
+  width: 1rem;
+  height: 1rem;
+  margin-right: -0.3rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.6;
+  transition: transform 0.2s ease;
+}
+
+/* Com o menu aberto a seta aponta para baixo, indicando que ele fecha */
+.action-btn[aria-expanded="true"] .chevron {
+  transform: rotate(180deg);
+}
+
+.export-menu {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 0.6rem);
+  min-width: 13rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.4rem;
+  border-radius: 18px;
+  background: rgba(20, 20, 22, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.32);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(6px);
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+}
+
+.export-menu.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  /* Ao abrir, fica visível na hora (senão a primeira opção não recebe o foco) */
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0s;
+}
+
+.export-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 0.9rem;
+  text-align: left;
+  white-space: nowrap;
+  color: #fff;
+  background: transparent;
+  border: none;
+  padding: 0.75em 0.9em;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.export-option:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Mesmo estilo da dica "espaço" do botão de gerar */
+.option-hint {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* Aviso das exportações: reaproveita o visual do "Copiado!", acima dos botões */
+.copied-msg.toast {
+  top: auto;
+  bottom: calc(100% + 0.8rem);
+}
+
 /* ---------- Responsivo (telas estreitas) ---------- */
 @media (max-width: 700px) {
   .palette {
     flex-direction: column;
   }
 
-  /* Reserva espaço na última coluna para o botão flutuante não sobrepor o hex code.
-     O valor de --btn-space é calculado dinamicamente pelo JS com a altura real do botão,
-     então funciona mesmo se o texto do botão quebrar em duas linhas. */
+  /* Reserva espaço na última coluna para os botões flutuantes não sobreporem os códigos.
+     O valor de --btn-space é calculado dinamicamente pelo JS com a altura real da barra,
+     então funciona mesmo se os botões quebrarem em duas linhas. */
   .color-column:last-child {
     padding-bottom: var(--btn-space, 5.5rem);
   }
@@ -278,11 +391,13 @@ body {
     height: 1px;
   }
 
-  .generate-btn {
+  .actions {
     bottom: 1.2rem;
+  }
+
+  .action-btn {
     padding: 0.85em 1.4em;
     font-size: 0.85rem;
-    white-space: nowrap;
   }
 
   /* A dica "espaço" não faz sentido em touchscreen e só ocupa espaço, causando quebra de linha */
@@ -309,5 +424,15 @@ body {
 
   .color-formats {
     font-size: 0.66rem;
+  }
+
+  /* Botões mais compactos para continuarem lado a lado */
+  .actions {
+    gap: 0.5rem;
+  }
+
+  .action-btn {
+    padding: 0.85em 1.1em;
+    font-size: 0.8rem;
   }
 }

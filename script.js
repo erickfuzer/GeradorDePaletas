@@ -1,6 +1,11 @@
 // ---------- Elementos principais ----------
 const paletteEl = document.getElementById('palette');
 const generateBtn = document.getElementById('generateBtn');
+const actionsEl = document.getElementById('actions');
+const exportWrap = document.getElementById('exportWrap');
+const exportBtn = document.getElementById('exportBtn');
+const exportMenu = document.getElementById('exportMenu');
+const toast = document.getElementById('toast');
 const NUM_COLORS = 5;
 
 // Ícones do cadeado (SVG inline). Usam currentColor para herdar o contraste do texto.
@@ -210,28 +215,178 @@ function copyToClipboard(text, anchorEl, copiedMsg) {
 }
 
 /**
- * Mede a altura real do botão flutuante e reserva esse espaço na última coluna
- * (apenas no layout mobile, onde as colunas ficam empilhadas). Isso evita que o
- * botão sobreponha o código hex, mesmo se o texto do botão quebrar em duas linhas
+ * Mede a altura real da barra de botões flutuante e reserva esse espaço na última
+ * coluna (apenas no layout mobile, onde as colunas ficam empilhadas). Isso evita que
+ * os botões sobreponham os códigos, mesmo se a barra quebrar em duas linhas
  * em telas muito estreitas.
  */
 function adjustBottomSpace() {
   const isMobileLayout = window.innerWidth <= 700;
 
   if (isMobileLayout) {
-    const buffer = 24; // respiro extra entre o hex code e o botão
-    const spaceNeeded = generateBtn.offsetHeight + buffer;
+    const buffer = 24; // respiro extra entre os códigos e os botões
+    const spaceNeeded = actionsEl.offsetHeight + buffer;
     document.documentElement.style.setProperty('--btn-space', `${spaceNeeded}px`);
   } else {
     document.documentElement.style.setProperty('--btn-space', '0px');
   }
 }
 
+// ---------- Exportar ----------
+
+/**
+ * Lista os hex atuais da paleta, na ordem das colunas.
+ */
+function getPaletteColors() {
+  return Array.from(document.querySelectorAll('.hex-code'), (hexCode) => hexCode.textContent);
+}
+
+/**
+ * Mostra um aviso rápido acima dos botões (ex: "CSS copiado!").
+ */
+function showToast(text) {
+  toast.textContent = text;
+  clearTimeout(toast.hideTimer);
+  toast.classList.add('show');
+  toast.hideTimer = setTimeout(() => toast.classList.remove('show'), 1600);
+}
+
+function openExportMenu() {
+  exportMenu.classList.add('open');
+  exportBtn.setAttribute('aria-expanded', 'true');
+  exportMenu.querySelector('.export-option').focus();
+}
+
+function closeExportMenu({ returnFocus = false } = {}) {
+  if (!exportMenu.classList.contains('open')) return;
+
+  exportMenu.classList.remove('open');
+  exportBtn.setAttribute('aria-expanded', 'false');
+  if (returnFocus) exportBtn.focus();
+}
+
+/**
+ * Desenha a paleta num canvas (5 faixas com o hex de cada uma, no mesmo
+ * estilo da página) e baixa como "paleta.png".
+ */
+async function exportPng() {
+  const colors = getPaletteColors();
+  const width = 1500;
+  const height = 900;
+  const stripeWidth = width / colors.length;
+  const font = '700 34px "Space Mono", monospace';
+
+  // O canvas só usa a Space Mono se ela já estiver carregada
+  if (document.fonts) await document.fonts.load(font);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+
+  ctx.font = font;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  colors.forEach((hex, i) => {
+    const x = i * stripeWidth;
+    const centerX = x + stripeWidth / 2;
+    const centerY = height / 2;
+
+    ctx.fillStyle = hex;
+    ctx.fillRect(x, 0, stripeWidth, height);
+
+    // "Pílula" translúcida atrás do código, como na página
+    const pillWidth = ctx.measureText(hex).width + 56;
+    const pillHeight = 68;
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.14)';
+    ctx.beginPath();
+    if (ctx.roundRect) {
+      ctx.roundRect(centerX - pillWidth / 2, centerY - pillHeight / 2, pillWidth, pillHeight, pillHeight / 2);
+    } else {
+      ctx.rect(centerX - pillWidth / 2, centerY - pillHeight / 2, pillWidth, pillHeight);
+    }
+    ctx.fill();
+
+    ctx.fillStyle = isColorLight(hex) ? '#1a1a1a' : '#f5f5f5';
+    ctx.fillText(hex, centerX, centerY);
+  });
+
+  canvas.toBlob((blob) => {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'paleta.png';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    showToast('Imagem baixada!');
+  }, 'image/png');
+}
+
+/**
+ * Copia a paleta como variáveis CSS, ex: ":root { --cor-1: #3A86FF; … }".
+ */
+function exportCss() {
+  const variables = getPaletteColors().map((hex, i) => `  --cor-${i + 1}: ${hex};`);
+  const css = `:root {\n${variables.join('\n')}\n}`;
+
+  navigator.clipboard.writeText(css)
+    .then(() => showToast('CSS copiado!'))
+    .catch(() => showToast('Não foi possível copiar'));
+}
+
 // ---------- Eventos ----------
 generateBtn.addEventListener('click', generatePalette);
 
+exportBtn.addEventListener('click', () => {
+  if (exportMenu.classList.contains('open')) {
+    closeExportMenu();
+  } else {
+    openExportMenu();
+  }
+});
+
+exportMenu.addEventListener('click', (event) => {
+  const option = event.target.closest('.export-option');
+  if (!option) return;
+
+  closeExportMenu({ returnFocus: true });
+  if (option.dataset.format === 'png') exportPng();
+  if (option.dataset.format === 'css') exportCss();
+});
+
+// Setas navegam entre as opções; Tab fecha o menu e volta para o botão "Exportar"
+exportMenu.addEventListener('keydown', (event) => {
+  const options = Array.from(exportMenu.querySelectorAll('.export-option'));
+  const current = options.indexOf(document.activeElement);
+
+  if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+    event.preventDefault();
+    const step = event.key === 'ArrowDown' ? 1 : -1;
+    options[(current + step + options.length) % options.length].focus();
+  } else if (event.key === 'Tab') {
+    event.preventDefault();
+    closeExportMenu({ returnFocus: true });
+  }
+});
+
+// Clicar fora do menu fecha
+document.addEventListener('click', (event) => {
+  if (!exportWrap.contains(event.target)) closeExportMenu();
+});
+
 document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') {
+    closeExportMenu({ returnFocus: exportWrap.contains(document.activeElement) });
+    return;
+  }
+
   if (event.code === 'Space') {
+    // Dentro do menu de exportar, o Espaço ativa a opção em foco em vez de gerar
+    if (exportMenu.contains(document.activeElement)) return;
+
     event.preventDefault(); // evita rolar a página
     generatePalette();
   }
@@ -246,7 +401,7 @@ if (window.visualViewport) {
 }
 
 // As fontes (Space Mono / Inter) carregam de forma assíncrona e podem mudar
-// a largura/altura do botão depois da primeira medição. Recalcula quando terminam.
+// a largura/altura dos botões depois da primeira medição. Recalcula quando terminam.
 if (document.fonts && document.fonts.ready) {
   document.fonts.ready.then(adjustBottomSpace);
 }
