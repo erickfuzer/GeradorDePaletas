@@ -3,6 +3,17 @@ const paletteEl = document.getElementById('palette');
 const generateBtn = document.getElementById('generateBtn');
 const NUM_COLORS = 5;
 
+// Ícones do cadeado (SVG inline). Usam currentColor para herdar o contraste do texto.
+const LOCK_ICONS = `
+  <svg class="icon-unlocked" viewBox="0 0 24 24" aria-hidden="true">
+    <rect x="5" y="11" width="14" height="10" rx="2"></rect>
+    <path d="M8 11V7a4 4 0 0 1 7.75-1.4"></path>
+  </svg>
+  <svg class="icon-locked" viewBox="0 0 24 24" aria-hidden="true">
+    <rect x="5" y="11" width="14" height="10" rx="2"></rect>
+    <path d="M8 11V7a4 4 0 0 1 8 0v4"></path>
+  </svg>`;
+
 /**
  * Gera um código de cor hexadecimal aleatório, ex: "#3A86FF"
  */
@@ -31,6 +42,16 @@ function createColumns() {
     const column = document.createElement('div');
     column.className = 'color-column';
 
+    // Agrupa cadeado e código, para centralizar tudo junto na coluna
+    const info = document.createElement('div');
+    info.className = 'color-info';
+
+    const lockBtn = document.createElement('button');
+    lockBtn.type = 'button';
+    lockBtn.className = 'lock-btn';
+    lockBtn.innerHTML = LOCK_ICONS;
+    setLocked(column, lockBtn, false);
+
     const hexCode = document.createElement('span');
     hexCode.className = 'hex-code';
 
@@ -38,22 +59,43 @@ function createColumns() {
     copiedMsg.className = 'copied-msg';
     copiedMsg.textContent = 'Copiado!';
 
-    column.appendChild(hexCode);
+    info.appendChild(lockBtn);
+    info.appendChild(hexCode);
+    column.appendChild(info);
     column.appendChild(copiedMsg);
     paletteEl.appendChild(column);
 
     // Clicar no código copia a cor para a área de transferência
-    hexCode.addEventListener('click', () => copyToClipboard(hexCode, copiedMsg));
+    hexCode.addEventListener('click', () => copyToClipboard(hexCode.textContent, hexCode, copiedMsg));
+
+    // Clicar no cadeado trava/destrava a cor (sem copiar nem gerar paleta)
+    lockBtn.addEventListener('click', (event) => {
+      event.stopPropagation();
+      setLocked(column, lockBtn, !column.classList.contains('locked'));
+    });
   }
 }
 
 /**
- * Gera 5 novas cores aleatórias e atualiza cada coluna.
+ * Trava ou destrava uma coluna, atualizando o visual e os atributos de acessibilidade.
+ */
+function setLocked(column, lockBtn, locked) {
+  column.classList.toggle('locked', locked);
+  lockBtn.setAttribute('aria-pressed', String(locked));
+  lockBtn.setAttribute('aria-label', locked ? 'Destravar cor' : 'Travar cor');
+  lockBtn.title = locked ? 'Destravar cor' : 'Travar cor';
+}
+
+/**
+ * Gera novas cores aleatórias e atualiza cada coluna, pulando as travadas.
  */
 function generatePalette() {
   const columns = document.querySelectorAll('.color-column');
 
   columns.forEach((column) => {
+    // Cor travada continua a mesma
+    if (column.classList.contains('locked')) return;
+
     const newColor = getRandomHexColor();
     const hexCode = column.querySelector('.hex-code');
 
@@ -72,12 +114,24 @@ function generatePalette() {
 }
 
 /**
- * Copia o código hex para a área de transferência e mostra o feedback visual.
+ * Copia um texto para a área de transferência e mostra o aviso "Copiado!"
+ * logo acima das informações da cor, alinhado ao elemento clicado.
  */
-function copyToClipboard(hexCode, copiedMsg) {
-  navigator.clipboard.writeText(hexCode.textContent).then(() => {
+function copyToClipboard(text, anchorEl, copiedMsg) {
+  navigator.clipboard.writeText(text).then(() => {
+    const column = copiedMsg.parentElement;
+    const columnRect = column.getBoundingClientRect();
+    const infoRect = column.querySelector('.color-info').getBoundingClientRect();
+    const anchorRect = anchorEl.getBoundingClientRect();
+    const gap = 10; // distância entre o aviso e o conteúdo da coluna
+
+    copiedMsg.style.top = `${infoRect.top - columnRect.top - copiedMsg.offsetHeight - gap}px`;
+    copiedMsg.style.left = `${anchorRect.left - columnRect.left + anchorRect.width / 2}px`;
+
+    // Reinicia o tempo do aviso se o usuário copiar de novo antes de ele sumir
+    clearTimeout(copiedMsg.hideTimer);
     copiedMsg.classList.add('show');
-    setTimeout(() => copiedMsg.classList.remove('show'), 1000);
+    copiedMsg.hideTimer = setTimeout(() => copiedMsg.classList.remove('show'), 1000);
   });
 }
 
