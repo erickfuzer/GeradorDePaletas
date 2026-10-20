@@ -17,9 +17,35 @@
   <!-- As 5 colunas da paleta são geradas dinamicamente pelo JS -->
   <main id="palette" class="palette"></main>
 
-  <button id="generateBtn" class="generate-btn">
-    Gerar Nova Paleta <span class="key-hint">espaço</span>
-  </button>
+  <!-- Barra flutuante com as ações: gerar uma nova paleta e exportar a atual -->
+  <div id="actions" class="actions">
+    <button id="generateBtn" class="action-btn" type="button">
+      Gerar Nova Paleta <span class="key-hint">espaço</span>
+    </button>
+
+    <div id="exportWrap" class="export">
+      <button id="exportBtn" class="action-btn" type="button"
+              aria-haspopup="true" aria-expanded="false" aria-controls="exportMenu">
+        Exportar
+        <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 15l6-6 6 6"></path>
+        </svg>
+      </button>
+
+      <!-- Menu de exportação (abre para cima, acima do botão) -->
+      <div id="exportMenu" class="export-menu" role="menu" aria-label="Exportar paleta">
+        <button class="export-option" type="button" role="menuitem" data-format="png">
+          Imagem PNG <span class="option-hint">paleta.png</span>
+        </button>
+        <button class="export-option" type="button" role="menuitem" data-format="css">
+          CSS <span class="option-hint">:root</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Aviso de confirmação das exportações -->
+    <span id="toast" class="copied-msg toast" role="status" aria-live="polite"></span>
+  </div>
 
   <script src="script.js"></script>
 </body>
