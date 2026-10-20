@@ -20,10 +20,11 @@ const LOCK_ICONS = `
   </svg>`;
 
 /**
- * Gera um código de cor hexadecimal aleatório, ex: "#3A86FF"
+ * Gera um código de cor hexadecimal aleatório, ex: "#3A86FF".
+ * Multiplica por 0x1000000 (uma a mais que 0xFFFFFF) para o branco também poder sair.
  */
 function getRandomHexColor() {
-  const hex = Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0');
+  const hex = Math.floor(Math.random() * 0x1000000).toString(16).padStart(6, '0');
   return `#${hex}`.toUpperCase();
 }
 
