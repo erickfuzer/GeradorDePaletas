@@ -15,7 +15,7 @@ Gere paletas de **5 cores aleatórias** com um clique (ou com a barra de espaço
 
 ---
 
-## ✨ Funcionalidades
+## Funcionalidades
 
 - **5 cores aleatórias** a cada geração, com transição suave entre uma paleta e outra
 - **Copiar com um clique:** toque no código hex e ele vai para a área de transferência, com o aviso *"Copiado!"*
@@ -24,12 +24,12 @@ Gere paletas de **5 cores aleatórias** com um clique (ou com a barra de espaço
 - **Responsivo:** no celular as colunas viram faixas empilhadas e o botão nunca cobre o último código
 
 <details>
-<summary>📱 Ver no celular</summary>
+<summary>Ver no celular</summary>
 <br>
 <img src="assets/preview-mobile.png" alt="Versão mobile com as cores empilhadas" width="260">
 </details>
 
-## 🚀 Como usar
+## Como usar
 
 **Online:** acesse **[erickfuzer.github.io/GeradorDePaletas](https://erickfuzer.github.io/GeradorDePaletas/)**.
 
@@ -41,9 +41,9 @@ git clone https://github.com/erickfuzer/GeradorDePaletas.git
 
 Depois é só abrir o `index.html` no navegador. Não precisa instalar nada.
 
-> 💡 O botão de copiar usa a Clipboard API, que só funciona em `https://` ou `localhost`. Se abrir o arquivo direto e a cópia falhar, use a versão online.
+> O botão de copiar usa a Clipboard API, que só funciona em `https://` ou `localhost`. Se abrir o arquivo direto e a cópia falhar, use a versão online.
 
-## 📁 Estrutura
+## Estrutura
 
 ```
 GeradorDePaletas/
@@ -53,18 +53,18 @@ GeradorDePaletas/
 └── assets/       # imagens do README
 ```
 
-## 🛠️ Como funciona
+## Como funciona
 
 - Cada cor é um número aleatório entre `0x000000` e `0xFFFFFF`, convertido para hexadecimal.
 - Para decidir a cor do texto, o script calcula o **brilho percebido** da cor com a fórmula `(R × 299 + G × 587 + B × 114) / 1000`. Acima de 150, o texto fica escuro; abaixo, claro.
 
-## 🔮 Próximas ideias
+## Próximas ideias
 
 - [ ] Travar uma cor para ela não mudar na próxima geração
 - [ ] Mostrar também os valores em RGB e HSL
 - [ ] Exportar a paleta como imagem ou CSS
 
-## 📄 Licença
+## Licença
 
 Distribuído sob a licença [MIT](LICENSE). Use, modifique e compartilhe à vontade.
 
