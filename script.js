@@ -114,17 +114,21 @@ function createColumns() {
     lockBtn.innerHTML = LOCK_ICONS;
     setLocked(column, lockBtn, false);
 
-    const hexCode = document.createElement('span');
+    // Os códigos são botões para também poderem ser copiados pelo teclado (Tab + Enter)
+    const hexCode = document.createElement('button');
+    hexCode.type = 'button';
     hexCode.className = 'hex-code';
 
     // RGB e HSL, em fonte menor, logo abaixo do hex
     const formats = document.createElement('div');
     formats.className = 'color-formats';
 
-    const rgbCode = document.createElement('span');
+    const rgbCode = document.createElement('button');
+    rgbCode.type = 'button';
     rgbCode.className = 'color-format rgb-code';
 
-    const hslCode = document.createElement('span');
+    const hslCode = document.createElement('button');
+    hslCode.type = 'button';
     hslCode.className = 'color-format hsl-code';
 
     formats.appendChild(rgbCode);

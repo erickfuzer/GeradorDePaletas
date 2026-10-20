@@ -53,6 +53,9 @@ body {
 
 /* ---------- Código hexadecimal (elemento de assinatura) ---------- */
 .hex-code {
+  border: none;
+  color: inherit;
+  cursor: pointer;
   font-family: 'Space Mono', monospace;
   font-weight: 700;
   font-size: clamp(1.1rem, 2.2vw, 1.6rem);
@@ -75,6 +78,13 @@ body {
   transform: scale(0.97);
 }
 
+/* Contorno só quando o foco vem do teclado (Tab), não do clique */
+.hex-code:focus-visible,
+.color-format:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
 /* ---------- Valores em RGB e HSL ---------- */
 .color-formats {
   display: flex;
@@ -88,6 +98,10 @@ body {
 }
 
 .color-format {
+  font: inherit; /* botões não herdam a fonte sozinhos */
+  color: inherit;
+  border: none;
+  background: transparent;
   white-space: nowrap;
   padding: 0.2em 0.75em;
   border-radius: 999px;
