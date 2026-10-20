@@ -15,8 +15,6 @@ Gere paletas de **5 cores aleatórias** com um clique (ou com a barra de espaço
 
 </div>
 
----
-
 ## Funcionalidades
 
 - **5 cores aleatórias** a cada geração, com transição suave entre uma paleta e outra
