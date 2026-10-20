@@ -23,13 +23,69 @@ function getRandomHexColor() {
 }
 
 /**
+ * Converte um hex ("#3A86FF") nos seus canais RGB, de 0 a 255.
+ */
+function hexToRgb(hex) {
+  return {
+    r: parseInt(hex.slice(1, 3), 16),
+    g: parseInt(hex.slice(3, 5), 16),
+    b: parseInt(hex.slice(5, 7), 16),
+  };
+}
+
+/**
+ * Converte RGB (0–255) em HSL: matiz em graus, saturação e luminosidade em %.
+ */
+function rgbToHsl({ r, g, b }) {
+  const rn = r / 255;
+  const gn = g / 255;
+  const bn = b / 255;
+  const max = Math.max(rn, gn, bn);
+  const min = Math.min(rn, gn, bn);
+  const delta = max - min;
+  const l = (max + min) / 2;
+
+  let h = 0;
+  let s = 0;
+
+  // Cinzas (delta 0) não têm matiz nem saturação
+  if (delta !== 0) {
+    s = delta / (1 - Math.abs(2 * l - 1));
+
+    if (max === rn) h = ((gn - bn) / delta) % 6;
+    else if (max === gn) h = (bn - rn) / delta + 2;
+    else h = (rn - gn) / delta + 4;
+
+    h *= 60;
+    if (h < 0) h += 360;
+  }
+
+  return {
+    h: Math.round(h) % 360,
+    s: Math.round(s * 100),
+    l: Math.round(l * 100),
+  };
+}
+
+/**
+ * Textos prontos para exibir e copiar, ex: "rgb(58, 134, 255)" e "hsl(217, 100%, 61%)".
+ */
+function formatRgb(hex) {
+  const { r, g, b } = hexToRgb(hex);
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
+function formatHsl(hex) {
+  const { h, s, l } = rgbToHsl(hexToRgb(hex));
+  return `hsl(${h}, ${s}%, ${l}%)`;
+}
+
+/**
  * Calcula o brilho de uma cor hex para decidir se o texto
  * sobre ela deve ser claro ou escuro (contraste legível).
  */
 function isColorLight(hex) {
-  const r = parseInt(hex.substr(1, 2), 16);
-  const g = parseInt(hex.substr(3, 2), 16);
-  const b = parseInt(hex.substr(5, 2), 16);
+  const { r, g, b } = hexToRgb(hex);
   const brightness = (r * 299 + g * 587 + b * 114) / 1000;
   return brightness > 150;
 }
@@ -55,18 +111,34 @@ function createColumns() {
     const hexCode = document.createElement('span');
     hexCode.className = 'hex-code';
 
+    // RGB e HSL, em fonte menor, logo abaixo do hex
+    const formats = document.createElement('div');
+    formats.className = 'color-formats';
+
+    const rgbCode = document.createElement('span');
+    rgbCode.className = 'color-format rgb-code';
+
+    const hslCode = document.createElement('span');
+    hslCode.className = 'color-format hsl-code';
+
+    formats.appendChild(rgbCode);
+    formats.appendChild(hslCode);
+
     const copiedMsg = document.createElement('span');
     copiedMsg.className = 'copied-msg';
     copiedMsg.textContent = 'Copiado!';
 
     info.appendChild(lockBtn);
     info.appendChild(hexCode);
+    info.appendChild(formats);
     column.appendChild(info);
     column.appendChild(copiedMsg);
     paletteEl.appendChild(column);
 
-    // Clicar no código copia a cor para a área de transferência
-    hexCode.addEventListener('click', () => copyToClipboard(hexCode.textContent, hexCode, copiedMsg));
+    // Clicar em qualquer código (hex, RGB ou HSL) copia aquele formato
+    [hexCode, rgbCode, hslCode].forEach((code) => {
+      code.addEventListener('click', () => copyToClipboard(code.textContent, code, copiedMsg));
+    });
 
     // Clicar no cadeado trava/destrava a cor (sem copiar nem gerar paleta)
     lockBtn.addEventListener('click', (event) => {
@@ -101,6 +173,8 @@ function generatePalette() {
 
     column.style.backgroundColor = newColor;
     hexCode.textContent = newColor;
+    column.querySelector('.rgb-code').textContent = formatRgb(newColor);
+    column.querySelector('.hsl-code').textContent = formatHsl(newColor);
 
     // Ajusta a cor do texto conforme o brilho do fundo
     if (isColorLight(newColor)) {
